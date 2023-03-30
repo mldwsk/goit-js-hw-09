@@ -2,6 +2,12 @@ var debounce = require('lodash.debounce');
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import {fetchCountries} from "./fetchCountries.js";
 
+Notify.init({
+  width: '300px',
+  position: 'center-top',
+  closeButton: false,
+  });
+
 const countryList = document.querySelector('.country-list');
 const countryInfo = document.querySelector('.country-info');
 const inputArea = document.getElementById('search-box');
