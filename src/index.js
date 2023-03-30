@@ -1,61 +1,59 @@
-const specifiedCountry = document.querySelector("#search-box");
 const countryList = document.querySelector(".country-list");
 const countryInfo = document.querySelector(".country-info");
+const inputArea = document.getElementById("search-box");
+let infoOnCountries = [];
 
-specifiedCountry.addEventListener("input", async () => {
-try {
-  const countries = await fetchCountries(specifiedCountry.value);
-  //rendercountryInfoItems(countries);
-} catch (error) {
-  console.log(error.message);
-}
+inputArea.addEventListener("input", async () => {
+  try {
+    infoOnCountries = [];
+    const countriesList = await fetchCountries(inputArea.value);
+    rendercountryListItems(countriesList);
+  } catch (error) {
+    console.log(error.message);
+  }
 });
 
-//dotąd działa
-
-async function fetchCountries(chosenCountry) {
-  const baseUrl = "https://restcountries.com/v3.1/{service}?fields={name},{capital},{population},{flag-svg},{languages}";
-  console.log(baseUrl);
-  console.log(chosenCountry);
-  let response = []; 
-  const arrayOfPrimisedData = ["name", "capital", "population", "flag-svg", "languages"];
-  for(let i = 0; i<arrayOfPrimisedData; i++) {
-    response.push(await fetch(`${baseUrl}/${arrayOfPrimisedData[i]}/${userId}`));
-    console.log(arrayOfPrimisedData[i]);
-  }
-  //return response.json();
-  const countriesArray = await Promise.all(arrayOfPrimisedData);
-  return countriesArray;
+async function fetchCountries(userInput) {
+  const baseUrl = "https://restcountries.com/v3.1/name";
+  let countryInfoObj = await fetch(`${baseUrl}/${userInput.trim()}?fields=name,capital,population,flags,languages`) 
+  .then(response => response.json())
+  .then(data => {
+    for(let i = 0; i<data.length; i++) {
+      if(!infoOnCountries.includes(data[i])) {
+        infoOnCountries.push(data[i]);
+      }
+    };
+  })
+  .catch(error => console.log(error));
   
-}
-  /*
-async function fetchUsers() {
-  const baseUrl = "https://jsonplaceholder.typicode.com";
-  const userIds = [1, 2, 3, 4, 5];
-
-  const arrayOfPromises = userIds.map(async (userId) => {
-    const response = await fetch(`${baseUrl}/users/${userId}`);
-    return response.json();
-  });
-
-  const users = await Promise.all(arrayOfPromises);
-  return users;
+  return infoOnCountries;
 }
 
-  */
- 
-/*
-function rendercountryInfoItems(countries) {
-  const markup = countries
+function rendercountryListItems(countries) {
+  if(countries.length>10) {
+    const markup = `<li class="item"><p>Too many countries. Please, be more specific.</p></li>`
+    countryList.innerHTML = markup;
+  }
+  else if(countries.length>=2&&countries.length<=10) {
+    const markup = countries
     .map(
-      (country) => `<li class="item">
-        <p><b>Name</b>: ${country.name.official}</p>
-        <p><b>Capital</b>: ${country.capital}</p>
-        <p><b>Population</b>: ${country.population}</p>
-        <p><b>Flag</b>: ${country.flag-svg}</p>
-        <p><b>Languages</b>: ${country.languages}</p>
+      (countries) => `<li class="item">
+        <img src="${countries.flags.svg}" width="40" height="40"> ${countries.name.official}
       </li>`
     )
     .join("");
-    countryInfo.innerHTML = markup;
-}*/
+    countryList.innerHTML = markup;
+  } else if(countries.length === 1) {
+    const markup = countries
+    .map(
+      (countries) => `<li class="item">
+        <img src="${countries.flags.svg}" width="40" height="40"> ${countries.name.official}
+      </li>`
+    )
+    .join("");
+    countryList.innerHTML = markup;
+  } else {
+    const markup = `<li class="item"><p>Ooops. Looks like there are no countries with that name.</p></li>`
+    countryList.innerHTML = markup;
+  }
+}
